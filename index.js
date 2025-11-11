@@ -30,6 +30,23 @@ async function run() {
 
     const db=client.db('job-hunt')
     const jobCollection =db.collection('job')
+    // user data
+    const userCollection=db.collection('user')
+    // user post
+    app.post('/user', async(req,res)=>{
+      const newUser=req.body;
+      const email=req.body.email;
+      const query={email: email}
+      const existingUser= await userCollection.findOne(query)
+      if(existingUser){
+        res.send('already exist')
+      }
+     else{
+const result =await userCollection.insertOne(newUser)
+      res.send(result)
+     }
+      
+    })
     // get
     app.get('/job',async(req,res)=>{
         const cursor =jobCollection.find();

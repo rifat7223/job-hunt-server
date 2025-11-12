@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId,  } = require('mongodb');
 const express =require('express')
 const cors=require('cors')
 const app =express()
@@ -30,8 +30,60 @@ async function run() {
 
     const db=client.db('job-hunt')
     const jobCollection =db.collection('job')
+    const allJobsCollection=db.collection('allJobs')
     // user data
     const userCollection=db.collection('user')
+    // all jobs
+
+     app.post('/allJobs', async(req,res)=>{
+        const allNewJob=req.body
+        const result=await allJobsCollection.insertOne(allNewJob)
+        res.send(result)
+    })
+    app.get('/allJobs', async(req,res)=>{
+      const result= await allJobsCollection.find().toArray()
+      res.send(result)
+    })
+     app.get('/allJobs/:id', async(req,res)=>{
+         const id =req.params.id;
+    const query={ _id: new ObjectId(id)}
+    const result = await allJobsCollection.findOne(query)
+     res.send(result)
+    })
+
+    app.put('/allJobs/:id', async (req, res) => {
+  try {
+    const id = req.params.id;      
+    const updatedJob = req.body;    
+
+    const query = { _id: new ObjectId(id) }; 
+    const updateDoc = { $set: updatedJob };
+
+    const result = await allJobsCollection.updateOne(query, updateDoc);
+
+    
+    res.send({ success: true, message: "Job updated successfully", result });
+  } catch (error) {
+    console.error(error);
+   
+  }
+
+});
+// add my jobs
+app.get('/myallJobs', async (req, res) => {
+  const email=req.query.email
+   // get email from query params
+  let query = {};
+
+  if (email) {
+    query.email = email; 
+  }
+console.log(query)
+  const result = await allJobsCollection.find(query).toArray();
+  res.send(result);
+});
+
+
     // user post
     app.post('/user', async(req,res)=>{
       const newUser=req.body;

@@ -82,7 +82,13 @@ console.log(query)
   const result = await allJobsCollection.find(query).toArray();
   res.send(result);
 });
-
+// delete
+app.delete('/myallJobs/:id',async(req,res)=>{
+  const id=req.params.id
+  const query={_id: new ObjectId(id)}
+  const result=await allJobsCollection.deleteOne(query)
+  res.send(result)
+})
 
     // user post
     app.post('/user', async(req,res)=>{
@@ -140,6 +146,38 @@ app.delete('/job/:id', async(req,res)=>{
     const result =await jobCollection.deleteOne(query)
     res.send(result)
 })
+
+// my task
+const acceptedTasksCollection = db.collection('acceptedTasks');
+
+// Get all accepted tasks for a user
+app.get('/acceptedTasks', async (req, res) => {
+  const email = req.query.userEmail;
+  const query = email ? { userEmail: email } : {};
+  const result = await acceptedTasksCollection.find(query).toArray();
+  res.send(result);
+});
+
+// Accept a job (add to accepted tasks)
+app.post('/acceptedTasks', async (req, res) => {
+  const newTask = req.body;
+
+  if (newTask.email === newTask.userEmail) {
+    return res.status(400).send({ error: "Cannot accept your own job" });
+  }
+
+  const result = await acceptedTasksCollection.insertOne(newTask);
+  res.send(result);
+});
+
+// Remove accepted task (DONE or CANCEL)
+app.delete('/acceptedTasks/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await acceptedTasksCollection.deleteOne(query);
+  res.send(result);
+});
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
